@@ -3,5 +3,5 @@ docker run --rm \
  -v $PWD/war-skeleton:/war-skeleton \
  -v $PWD/xwar-skeleton:/xwar-skeleton \
  -v $PWD/m2:/root/.m2/ \
- 34478c \
+ markkimsal/mondrian-war-build \
  /app/build-war.sh $@
