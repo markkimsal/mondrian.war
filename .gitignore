@@ -1,0 +1,6 @@
+build/
+wartmp/
+dist/
+m2/repository
+*.war
+
