@@ -2,5 +2,7 @@ build/
 wartmp/
 dist/
 m2/repository
+xwar-skeleton/ROOT/
+xwar-skeleton/xmla4js/
 *.war
 
