@@ -1,7 +1,8 @@
 Build Mondrian.war
 ===
-docker build -t markkimsal/mondrian-war-build:latest .
-sh ./build-with-docker.sh
+
+    docker build -t markkimsal/mondrian-war-build:latest .
+    sh ./build-with-docker.sh
 
 History
 ---
