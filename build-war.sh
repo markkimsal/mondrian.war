@@ -38,17 +38,33 @@ cd /app
 
 
 #initialize tmp dir for organizing war files
-rm -Rf $WARTMP
+rm -Rf $WARTMP/*
 if [ $XMONDRIAN -eq 1 ];then
-    echo "initializing x-mondrian add-ons"
-    git clone https://github.com/rpbouman/xmla4js $WARSXL/xmla4js
-    rm -Rf  $WARSXL/xmla4js/.git/
-    cp -R $WARSXL $WARTMP
+    cp -R $WARSXL/* $WARTMP
 else
-    cp -R $WARSKL $WARTMP
+    cp -R $WARSKL/* $WARTMP
 fi
 
 mkdir -p $WARTMP/WEB-INF/lib
+mkdir -p $WARTMP/WEB-INF/classes
+mkdir -p $WARTMP/ROOT
+
+#install xmla4js
+if [ $XMONDRIAN -eq 1 ];then
+    echo "initializing x-mondrian add-ons ..."
+    echo "cloning xmla4js"
+    git clone https://github.com/rpbouman/xmla4js $WARTMP/xmla4js
+    rm -Rf  $WARTMP/xmla4js/.git/
+
+    echo "downloading xavier"
+    if [ ! -f $WARTMP/xavier.zip ]; then
+        wget -O $WARTMP/xavier.zip "https://github.com/rpbouman/xavier/raw/master/dist/xavier.zip"
+        cd $WARTMP/
+        unzip xavier.zip
+        cd ..
+    fi
+fi
+
 unzip $OUTPUT/psw-ce-*.zip -d $WARTMP/
 mv    $WARTMP/schema-workbench/* $WARTMP/WEB-INF/
 rmdir $WARTMP/schema-workbench
