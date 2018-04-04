@@ -21,7 +21,8 @@ cd build
 git clone https://github.com/pentaho/maven-parent-poms.git
 cd maven-parent-poms/pentaho-ce-parent-pom/pentaho-ce-jar-parent-pom/
 git clone https://github.com/pentaho/mondrian.git
-cd mondrian/mondrian
+cd mondrian/
+#cd mondrian/mondrian
 
 #mvn -DrunIT integration-test -Pload-foodmart
 #mvn help:active-profiles
@@ -30,10 +31,10 @@ cd mondrian/mondrian
 ##TODO: switch branches
 mvn -DrunIT install
 
-cp target/mondrian-*.jar $OUTPUT
-cp ../workbench/target/workbench-*.jar $OUTPUT
-cp ../assemblies/psw-ce/target/psw-ce-*.zip $OUTPUT
-#cp ../assemblies/psw-ce/target/lib/*.jar $OUTPUT
+cp mondrian/target/mondrian-*.jar $OUTPUT
+cp ./workbench/target/workbench-*.jar $OUTPUT
+cp ./assemblies/psw-ce/target/psw-ce-*.zip $OUTPUT
+#cp ./assemblies/psw-ce/target/lib/*.jar $OUTPUT
 cd /app
 
 
@@ -66,9 +67,11 @@ if [ $XMONDRIAN -eq 1 ];then
 fi
 
 unzip $OUTPUT/psw-ce-*.zip -d $WARTMP/
-mv    $WARTMP/schema-workbench/* $WARTMP/WEB-INF/
-rmdir $WARTMP/schema-workbench
+mv    $OUTPUT/mondrian-*.jar $WARTMP/WEB-INF/lib/
+mv    $WARTMP/schema-workbench/lib/* $WARTMP/WEB-INF/lib/
+mv    $WARTMP/schema-workbench/log4j.xml $WARTMP/WEB-INF/classes/
+#rmdir $WARTMP/schema-workbench
 #mv log4j.xml
-mv $WARTMP/WEB-INF/log4j.xml $WARTMP/WEB-INF/classes/
+#mv $WARTMP/WEB-INF/log4j.xml $WARTMP/WEB-INF/classes/
 
 jar cf $WARNAME -C $WARTMP .
