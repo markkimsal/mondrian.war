@@ -1,13 +1,13 @@
-#!/bin/sh
+#!/bin/bash
 echo $1
 
 
-if [ $1 == 'xmondrian' ];then
+if [ "$1" == 'xmondrian' ];then
 XMONDRIAN=1
-WARNAME=xmondrian.war
+WARNAME="xmondrian.war"
 else
 XMONDRIAN=0
-WARNAME=mondrian.war
+WARNAME="mondrian.war"
 fi
 
 WARTMP=/app/wartmp
@@ -17,38 +17,70 @@ OUTPUT=/app/dist
 cd /app
 mkdir -p build
 mkdir -p $OUTPUT
-cd build
-git clone https://github.com/pentaho/maven-parent-poms.git
-cd maven-parent-poms/pentaho-ce-parent-pom/pentaho-ce-jar-parent-pom/
-git clone https://github.com/pentaho/mondrian.git
-cd mondrian/
-#cd mondrian/mondrian
 
-#mvn -DrunIT integration-test -Pload-foodmart
-#mvn help:active-profiles
+function copy_jars() {
+	cd build/maven-parent-poms/pentaho-ce-parent-pom/pentaho-ce-jar-parent-pom/mondrian/
+	cp mondrian/target/mondrian-*.jar $OUTPUT
+	cp ./workbench/target/workbench-*.jar $OUTPUT
+	cp ./assemblies/psw-ce/target/psw-ce-*.zip $OUTPUT
+	#cp ./assemblies/psw-ce/target/lib/*.jar $OUTPUT
+	cd /app
+}
 
-#
-##TODO: switch branches
-mvn -DrunIT install
+function organize_war() {
+	#initialize tmp dir for organizing war files
+	rm -Rf $WARTMP/*
+	if [ $XMONDRIAN -eq 1 ];then
+	    cp -R $WARSXL/* $WARTMP
+	else
+	    cp -R $WARSKL/* $WARTMP
+	fi
 
-cp mondrian/target/mondrian-*.jar $OUTPUT
-cp ./workbench/target/workbench-*.jar $OUTPUT
-cp ./assemblies/psw-ce/target/psw-ce-*.zip $OUTPUT
-#cp ./assemblies/psw-ce/target/lib/*.jar $OUTPUT
-cd /app
+	mkdir -p $WARTMP/WEB-INF/lib
+	mkdir -p $WARTMP/WEB-INF/classes
+	mkdir -p $WARTMP/ROOT
 
 
-#initialize tmp dir for organizing war files
-rm -Rf $WARTMP/*
-if [ $XMONDRIAN -eq 1 ];then
-    cp -R $WARSXL/* $WARTMP
-else
-    cp -R $WARSKL/* $WARTMP
-fi
+	unzip $OUTPUT/psw-ce-*.zip -d $WARTMP/
+	#mv    $OUTPUT/mondrian-*.jar $WARTMP/WEB-INF/lib/
+	#mv    $WARTMP/schema-workbench/lib/* $WARTMP/WEB-INF/lib/
+	#mv    $WARTMP/schema-workbench/log4j.xml $WARTMP/WEB-INF/classes/
+	#rmdir $WARTMP/schema-workbench
+	#mv log4j.xml
+	#mv $WARTMP/WEB-INF/log4j.xml $WARTMP/WEB-INF/classes/
+}
 
-mkdir -p $WARTMP/WEB-INF/lib
-mkdir -p $WARTMP/WEB-INF/classes
-mkdir -p $WARTMP/ROOT
+function build_maven() {
+
+	cd build
+	if [ ! -d 'maven-parent-poms' ]; then
+		git clone https://github.com/pentaho/maven-parent-poms.git
+	fi
+	cd maven-parent-poms/pentaho-ce-parent-pom/pentaho-ce-jar-parent-pom/
+	if [ ! -d 'mondrian' ]; then
+		git clone https://github.com/pentaho/mondrian.git
+	fi
+	cd mondrian/
+
+	#mvn -DrunIT integration-test -Pload-foodmart
+	#mvn help:active-profiles
+
+	#
+	##TODO: switch branches
+	if [ -z "mondrian/target/mondrian-*.jar" ]; then
+		echo "running maven install..."
+		mvn -DrunIT install
+	else
+		echo " ** SKIPPING maven install"
+		echo " ** to force maven rebuild remove the build directory."
+	fi
+
+	cd /app
+}
+
+build_maven
+copy_jars
+organize_war
 
 #install xmla4js
 if [ $XMONDRIAN -eq 1 ];then
@@ -66,12 +98,5 @@ if [ $XMONDRIAN -eq 1 ];then
     fi
 fi
 
-unzip $OUTPUT/psw-ce-*.zip -d $WARTMP/
-mv    $OUTPUT/mondrian-*.jar $WARTMP/WEB-INF/lib/
-mv    $WARTMP/schema-workbench/lib/* $WARTMP/WEB-INF/lib/
-mv    $WARTMP/schema-workbench/log4j.xml $WARTMP/WEB-INF/classes/
-#rmdir $WARTMP/schema-workbench
-#mv log4j.xml
-#mv $WARTMP/WEB-INF/log4j.xml $WARTMP/WEB-INF/classes/
 
 jar cf $WARNAME -C $WARTMP .
