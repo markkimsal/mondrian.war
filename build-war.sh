@@ -67,12 +67,14 @@ function build_maven() {
 
 	#
 	##TODO: switch branches
-	if [ -z "mondrian/target/mondrian-*.jar" ]; then
+        #build/maven-parent-poms/pentaho-ce-parent-pom/pentaho-ce-jar-parent-pom/mondrian/mondrian/target/
+	if ls mondrian/target/mondrian-*.jar 2&>1 > /dev/null; then
+		echo " ** SKIPPING maven install"
+		echo " ** to force maven rebuild remove the build directory or: "
+		echo " ** rm build/maven-parent-poms/pentaho-ce-parent-pom/pentaho-ce-jar-parent-pom/mondrian/mondrian/target/*.jar"
+	else
 		echo "running maven install..."
 		mvn -DrunIT install
-	else
-		echo " ** SKIPPING maven install"
-		echo " ** to force maven rebuild remove the build directory."
 	fi
 
 	cd /app
